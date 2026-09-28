@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CDL Training - Test</title>
+    <script src="config.js?v=20260730-contact1" defer></script>
+    <script src="frontend-api.js?v=20260927-hardened1" defer></script>
+    <style>
+      body {
+        font-family: system-ui, Arial;
+        padding: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+        background: #eef2f6;
+      }
+      .card {
+        background: white;
+        border: 1px solid #d8e0e8;
+        border-radius: 16px;
+        padding: 18px;
+        margin: 14px 0;
+      }
+      .small {
+        color: #555;
+        font-size: 14px;
+      }
+      .question {
+        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+      }
+      .option {
+        display: block;
+        margin: 8px 0;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      button,
+      .action-link {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 0;
+        background: #17324d;
+        color: white;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .action-link.secondary {
+        background: #2f8f4e;
+      }
+      .result-pass {
+        color: #176b36;
+        font-weight: 700;
+      }
+      .result-fail {
+        color: #8a2d24;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 id="testTitle">Test</h2>
+    <div class="small" id="who"></div>
+    <p><a href="modules.html">← Back to Modules</a></p>
+    <div id="lock" class="card">Checking if test is unlocked…</div>
+    <div id="test" class="card" style="display: none">
+      <div class="small" id="testMeta"></div>
+      <div id="priorResult" class="small" style="margin-top:8px"></div>
+      <form id="quizForm"></form>
+      <div class="actions" id="actions">
+        <button id="submit" type="button">Submit Test</button>
+        <button id="retake" type="button" style="display:none">Retake Test</button>
+        <a id="dashboardBtn" class="action-link secondary" href="modules.html" style="display:none">Return to Training Dashboard</a>
+      </div>
+      <div id="result" style="margin-top: 14px"></div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const username = requireAuth();
+        const classId = qs("classId") || DEFAULT_CLASS_ID;
+        document.getElementById("who").textContent = `Signed in as ${username}`;
+
+        let QUESTIONS = [];
+        let classInfo = {};
+        let status = {};
+        let submitting = false;
+
+        const lock = document.getElementById("lock");
+        const test = document.getElementById("test");
+        const form = document.getElementById("quizForm");
+        const result = document.getElementById("result");
+        const priorResult = document.getElementById("priorResult");
+        const submitBtn = document.getElementById("submit");
+        const retakeBtn = document.getElementById("retake");
+        const dashboardBtn = document.getElementById("dashboardBtn");
+
+        function passingScore() {
+          return Number(classInfo.passingScore || 80);
+        }
+
+        function render() {
+          form.innerHTML = "";
+          QUESTIONS.forEach((q, i) => {
+            const w = document.createElement("div");
+            w.className = "question";
+            const p = document.createElement("p");
+            const heading = document.createElement("b");
+            heading.textContent = `Question ${i + 1}:`;
+            p.append(heading, " " + String(q.question || ""));
+            w.appendChild(p);
+            [q.optionA, q.optionB, q.optionC, q.optionD].forEach((opt, j) => {
+              if (!opt) return;
+              const label = document.createElement("label");
+              label.className = "option";
+              const input = document.createElement("input");
+              input.type = "radio";
+              input.name = `q${i}`;
+              input.value = String(j);
+              label.append(input, " ", opt);
+              w.appendChild(label);
+            });
+            form.appendChild(w);
+          });
+        }
+
+        function selections() {
+          const answers = {};
+          QUESTIONS.forEach((question, i) => {
+            const x = form.querySelector(`input[name="q${i}"]:checked`);
+            if (x) answers[String(question.id)] = Number(x.value);
+          });
+          return answers;
+        }
+
+        function setSubmitting(value) {
+          submitting = value;
+          submitBtn.disabled = value;
+          retakeBtn.disabled = value;
+          form.querySelectorAll("input").forEach((input) => {
+            input.disabled = value;
+          });
+          if (value) submitBtn.textContent = "Saving Score…";
+          else submitBtn.textContent = "Submit Test";
+        }
+
+        function showPassed(bestScore, attemptScore, correct) {
+          form.querySelectorAll("input").forEach((input) => {
+            input.disabled = true;
+          });
+          submitBtn.style.display = "none";
+          retakeBtn.style.display = "none";
+          dashboardBtn.style.display = "inline-flex";
+          const bestText = bestScore === "" || bestScore === null || bestScore === undefined ? attemptScore : bestScore;
+          result.className = "result-pass";
+          result.innerHTML = `<b>Passed.</b> Score: ${attemptScore}%${Number(bestText) !== Number(attemptScore) ? ` · Best score: ${bestText}%` : ""}${correct !== null ? ` (${correct}/${QUESTIONS.length})` : ""}. Your course remains passed even if a lower score was recorded on an earlier attempt.`;
+        }
+
+        function showReadyForRetake(bestScore, attemptScore, correct) {
+          submitBtn.style.display = "none";
+          retakeBtn.style.display = "inline-flex";
+          dashboardBtn.style.display = "none";
+          const bestText = bestScore === "" || bestScore === null || bestScore === undefined ? attemptScore : bestScore;
+          result.className = "result-fail";
+          result.innerHTML = `<b>Did not pass.</b> This attempt: ${attemptScore}%${correct !== null ? ` (${correct}/${QUESTIONS.length})` : ""}. Best score: ${bestText}% · ${passingScore()}% required to pass.`;
+        }
+
+        async function load() {
+          const s = await apiGetStatus(username, classId);
+          status = s;
+          if (!s || !s.ok) {
+            throw new Error((s && s.error) || "Unable to load course status");
+          }
+          classInfo = s.classInfo || {};
+          document.getElementById("testTitle").textContent =
+            (classInfo.title || "Training") + " Final Test";
+
+          if (!allModulesComplete(s)) {
+            lock.innerHTML = "<b>Locked.</b> Finish all modules for this class first.";
+            return;
+          }
+
+          document.getElementById("testMeta").innerHTML =
+            `Multiple choice · Passing score: <b>${passingScore()}%</b>`;
+
+          if (s.testPassed) {
+            lock.style.display = "none";
+            test.style.display = "block";
+            form.style.display = "none";
+            submitBtn.style.display = "none";
+            retakeBtn.style.display = "none";
+            dashboardBtn.style.display = "inline-flex";
+            result.className = "result-pass";
+            result.innerHTML = `<b>Passed.</b> Best score: ${s.testScore}% · This course is complete.`;
+            return;
+          }
+
+          if (s.testScore !== "" && s.testScore !== null && s.testScore !== undefined) {
+            priorResult.textContent = `Current best score: ${s.testScore}% · ${passingScore()}% required to pass.`;
+          }
+
+          const q = await apiListTestQuestions(classId, true);
+          if (!q || !q.ok) throw new Error((q && q.error) || "Unable to load test questions");
+          QUESTIONS = q.questions || [];
+          document.getElementById("testMeta").innerHTML =
+            `${QUESTIONS.length} questions · Multiple choice · Passing score: <b>${passingScore()}%</b>`;
+
+          if (!QUESTIONS.length) {
+            lock.textContent = "No active questions are configured for this class.";
+            return;
+          }
+
+          render();
+          lock.style.display = "none";
+          test.style.display = "block";
+        }
+
+        submitBtn.addEventListener("click", async () => {
+          if (submitting) return;
+
+          const answers = selections();
+          const unanswered = QUESTIONS.length - Object.keys(answers).length;
+          if (unanswered) {
+            result.className = "";
+            result.innerHTML = `<b>Please answer all questions.</b> ${unanswered} unanswered.`;
+            return;
+          }
+
+          setSubmitting(true);
+          result.className = "";
+          result.textContent = "Saving score…";
+
+          try {
+            const res = await apiSubmitTestAnswers(username, answers, classId);
+            if (!res || !res.ok) {
+              setSubmitting(false);
+              result.textContent = "Unable to save the test: " + ((res && res.error) || "Unknown error");
+              return;
+            }
+
+            status = res;
+            setSubmitting(false);
+            if (res.attemptPassed) showPassed(res.testScore, res.attemptScore, res.correctCount);
+            else showReadyForRetake(res.testScore, res.attemptScore, res.correctCount);
+          } catch (err) {
+            setSubmitting(false);
+            console.error(err);
+            result.innerHTML = "<b>Unable to save the score.</b> Please try again.";
+          }
+        });
+
+        retakeBtn.addEventListener("click", () => {
+          render();
+          form.style.display = "block";
+          form.querySelectorAll("input").forEach((input) => {
+            input.disabled = false;
+          });
+          submitBtn.style.display = "inline-flex";
+          retakeBtn.style.display = "none";
+          dashboardBtn.style.display = "none";
+          result.className = "";
+          result.textContent = "";
+          scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        load().catch((err) => {
+          console.error(err);
+          lock.textContent = "Unable to load the test. Please return to the training dashboard and try again.";
+        });
+      });
+    </script>
+  </body>
+</html>
