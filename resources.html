@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Blue Ridge ELDT - Public Resources</title>
+  <style>
+    :root{
+      --navy:#17324d;
+      --navy-dark:#10263a;
+      --green:#2f8f4e;
+      --bg:#eef2f6;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#5b6570;
+      --border:#d8e0e8;
+      --shadow:0 12px 32px rgba(16,38,58,.12);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#f5f7fa 0%,var(--bg) 100%);color:var(--text)}
+    .topbar{background:linear-gradient(135deg,var(--navy-dark),var(--navy));border-bottom:4px solid var(--green);color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.14)}
+    .topbar-inner{max-width:1120px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px}
+    .mark{width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:23px}
+    .brand h1{margin:0;font-size:clamp(1.2rem,2vw,1.85rem)}
+    .brand p{margin:4px 0 0;color:rgba(255,255,255,.84);font-weight:600}
+    .top-link,.btn,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:12px;text-decoration:none;font-weight:800}
+    .top-link{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff}
+    .page{max-width:1120px;margin:0 auto;padding:38px 20px 48px}
+    .hero,.card{background:var(--card);border:1px solid rgba(23,50,77,.07);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero{padding:34px;margin-bottom:24px}
+    .eyebrow{display:inline-block;padding:8px 12px;border-radius:999px;background:#e7eef5;color:var(--navy);font-size:.86rem;font-weight:800;margin-bottom:16px}
+    h2,h3{color:var(--navy-dark)}
+    .hero h2{margin:0;font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+    .accent{width:88px;height:4px;border-radius:999px;background:var(--green);margin:16px 0 18px}
+    .hero p,.card p{color:var(--muted);line-height:1.65}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .card{padding:24px}
+    .card h3{margin:0 0 8px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .btn{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff}
+    .btn-secondary{background:#fff;color:var(--navy-dark);border:1px solid var(--border)}
+    .notice{margin-top:24px;padding:18px;border-radius:14px;background:#f7fafc;border:1px solid var(--border);color:var(--muted);line-height:1.6}
+    .footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:.92rem}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}.top-link,.btn,.btn-secondary{width:100%}.actions{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="mark">BR</div>
+        <div>
+          <h1>Blue Ridge Entry Level Driver Training</h1>
+          <p>Public Training Resources</p>
+        </div>
+      </div>
+      <a class="top-link" href="index.html">Student Login</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Blue Ridge ELDT</span>
+      <h2>Training resources for CDL students.</h2>
+      <div class="accent"></div>
+      <p>
+        Use this page for Blue Ridge Entry Level Driver Training resources and study materials.
+        Additional business-branded materials will be added as courses are expanded.
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h3>Already enrolled?</h3>
+        <p>Sign in to open your assigned ELDT class, complete modules, and view your training progress.</p>
+        <div class="actions">
+          <a class="btn" href="index.html#loginCard">Student Sign In</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Need training?</h3>
+        <p>Request access for Class A/B or an available endorsement course. Your request will be reviewed before the account is activated.</p>
+        <div class="actions">
+          <a class="btn" href="class-signup.html">Request Training</a>
+        </div>
+      </article>
+    </section>
+
+    <div class="notice">
+      Blue Ridge-branded Class A and Class B pre-trip study guides can be added here without changing the training portal or its student records.
+    </div>
+  </main>
+
+  <div class="footer">Blue Ridge Entry Level Driver Training · ELDT Compliance Training</div>
+</body>
+</html>
