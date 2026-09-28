@@ -4,7 +4,7 @@
 
 // Independent Blue Ridge Google Apps Script deployment.
 const APP_SCRIPT_URL =
-"https://example.invalid/BLUE-RIDGE-ELDT-SANDBOX-BACKEND-NOT-CONFIGURED";
+"https://script.google.com/macros/s/AKfycbzqytd2bkdcVGVAit-uX0DAJ5waaYuYNqP9B6ZaeArX1S3OExvUQ6j_XfQA3NKCJ_pA/exec";
 
 // Backward compatibility.
 const SHEETS_API_URL = APP_SCRIPT_URL;
