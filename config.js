@@ -14,23 +14,6 @@ const BUSINESS_SHORT_NAME = "Blue Ridge ELDT";
 const BUSINESS_TAGLINE = "ELDT Compliance Training";
 
 // ==============================
-// DEMO USERS
-// ==============================
-
-const USERS = [
-  {
-    username: "student1",
-    password: "1234",
-    role: "student"
-  },
-  {
-    username: "student2",
-    password: "1234",
-    role: "student"
-  }
-];
-
-// ==============================
 // DEFAULT CLASS A/B MODULES
 // Matches the current Martinsville CDL curriculum.
 // The live Google Sheet remains authoritative.
