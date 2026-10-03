@@ -499,7 +499,16 @@
     function initOrLoadPlayer(){ if(!selectedModule)return; if(player){ player.loadVideoById(selectedModule.youtubeId); return; } if(window.YT&&YT.Player){ player = new YT.Player("player",{videoId:selectedModule.youtubeId,playerVars:{rel:0,modestbranding:1,playsinline:1,controls:1,disablekb:1},events:{onReady:onPlayerReady,onStateChange:onPlayerStateChange,onPlaybackRateChange:enforcePlaybackRate}}); } }
     window.onYouTubeIframeAPIReady = initOrLoadPlayer;
     function onPlayerReady(){ playerReady=true; try{duration=player.getDuration()||0;player.setPlaybackRate(1);}catch{} if(selectedModule&&player&&player.loadVideoById) player.cueVideoById(selectedModule.youtubeId); updateUI(); startTimers(); }
-    function onPlayerStateChange(){ try{duration=player.getDuration()||duration;player.setPlaybackRate(1);}catch{} }
+    function onPlayerStateChange(event){
+      try{duration=player.getDuration()||duration;player.setPlaybackRate(1);}catch{}
+      if(event && event.data===YT.PlayerState.ENDED && duration){
+        if(validPlaySeconds >= requiredActiveSeconds()){
+          maxWatched = duration;
+          updateUI();
+          maybeComplete();
+        }
+      }
+    }
 
     async function loadModuleData(){
       const dash=await apiGetStudentDashboard(username);
