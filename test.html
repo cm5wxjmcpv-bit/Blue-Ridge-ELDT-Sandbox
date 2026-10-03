@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>CDL Training - Test</title>
     <script src="config.js?v=20260730-contact1" defer></script>
-    <script src="frontend-api.js?v=20260927-hardened1" defer></script>
+    <script src="frontend-api.js?v=20261003-v9-login-diagnostics" defer></script>
     <style>
       body {
         font-family: system-ui, Arial;
@@ -177,11 +177,27 @@
         }
 
         async function load() {
-          const s = await apiGetStatus(username, classId);
+          // Prefer the status already calculated by the backend while authorizing
+          // listTestQuestions. Until that field is deployed, fall back to the
+          // existing getStatus request so this frontend remains backward-compatible.
+          const q = await apiListTestQuestions(classId, true);
+          if (!q || !q.ok) {
+            // Preserve the existing locked-course message when the questions
+            // endpoint rejects a student who has not completed every module.
+            const fallbackStatus = await apiGetStatus(username, classId);
+            if (fallbackStatus && fallbackStatus.ok && !allModulesComplete(fallbackStatus)) {
+              lock.innerHTML = "<b>Locked.</b> Finish all modules for this class first.";
+              return;
+            }
+            throw new Error((q && q.error) || "Unable to load test questions");
+          }
+
+          const s = q.status && q.status.ok ? q.status : await apiGetStatus(username, classId);
           status = s;
           if (!s || !s.ok) {
             throw new Error((s && s.error) || "Unable to load course status");
           }
+
           classInfo = s.classInfo || {};
           document.getElementById("testTitle").textContent =
             (classInfo.title || "Training") + " Final Test";
@@ -210,8 +226,6 @@
             priorResult.textContent = `Current best score: ${s.testScore}% · ${passingScore()}% required to pass.`;
           }
 
-          const q = await apiListTestQuestions(classId, true);
-          if (!q || !q.ok) throw new Error((q && q.error) || "Unable to load test questions");
           QUESTIONS = q.questions || [];
           document.getElementById("testMeta").innerHTML =
             `${QUESTIONS.length} questions · Multiple choice · Passing score: <b>${passingScore()}%</b>`;
