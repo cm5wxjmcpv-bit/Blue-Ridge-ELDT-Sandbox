@@ -41,8 +41,8 @@
       <h2>Training Request</h2>
       <p class="small">Create your login and submit the information below. Your account will remain inactive until an administrator approves it.</p>
       <label>Choose a username<input id="username" autocomplete="username" required></label>
-      <label>Create a password<input id="password" type="password" autocomplete="new-password" required></label>
-      <label>Confirm password<input id="confirmPassword" type="password" autocomplete="new-password" required></label>
+      <label>Create a password<input id="password" type="password" autocomplete="new-password" minlength="8" required></label>
+      <label>Confirm password<input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
       <label>Full name as shown on license<input id="fullNameOnLicense" autocomplete="name" required></label>
       <label>License number<input id="licenseNumber" required></label>
       <label>License state<select id="licenseState" required><option value="">Select state</option></select></label>
@@ -178,7 +178,7 @@
           contactInput.reportValidity();
           return;
         }
-        if(payload.password!==confirmPassword){
+        if(payload.password.length<8){\n          msg.className="msg error";\n          msg.textContent="Password must be at least 8 characters.";\n          return;\n        }\n        if(payload.password!==confirmPassword){
           msg.className="error";
           msg.textContent="The passwords do not match.";
           return;
