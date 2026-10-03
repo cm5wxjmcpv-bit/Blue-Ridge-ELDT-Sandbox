@@ -112,6 +112,9 @@ async function apiPost(action, body = {}) {
 
   const data = await response.json();
   const normalizedAction = String(action).toLowerCase();
+  if (normalizedAction === "validatelogin" && !response.ok) {
+    throw new Error("Login service is temporarily unavailable. Please try again.");
+  }
   if (normalizedAction === "adminlogin" && data && data.ok && data.token) {
     sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token);
   }
@@ -122,17 +125,17 @@ async function apiPost(action, body = {}) {
 async function login(username, password) {
   try {
     const data = await apiPost("validateLogin", { username, password });
-    if (data && data.ok) {
+    if (data && data.ok === true && typeof data.token === "string" && data.token) {
       localStorage.setItem(AUTH_STORAGE_KEY, data.username || username);
       if (data.token) localStorage.setItem(STUDENT_TOKEN_KEY, data.token);
       return true;
     }
     localStorage.removeItem(STUDENT_TOKEN_KEY);
-    return false;
+    if (data && data.ok === false && data.code === "AUTH_INVALID") return false;
+    throw new Error("Login service is temporarily unavailable. Please try again.");
   } catch (err) {
-    console.error(err);
     localStorage.removeItem(STUDENT_TOKEN_KEY);
-    return false;
+    throw new Error("Login service is temporarily unavailable. Please try again.");
   }
 }
 
